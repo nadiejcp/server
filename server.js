@@ -1,46 +1,44 @@
 const express = require('express');
 const multer = require('multer');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
-const PORT = 2525;
+const PORT = 3000;
 
-const cors = require('cors');
-
-app.use(cors());
-
-// Configuración de multer para almacenar los archivos en la carpeta "archivos"
+// Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, 'archivos'));
+        cb(null, path.join(__dirname, 'Archivos')); // Save files in the "archivos" folder
     },
     filename: function (req, file, cb) {
-        cb(null, file.originalname);
+        cb(null, file.originalname); // Use original file name
     }
 });
 
 const upload = multer({ storage });
 
-// Middleware para servir archivos estáticos
-app.use(express.static(path.join(__dirname, 'files'))); // Sirve los archivos de la carpeta "files"
+// Serve static files (index.html, CSS, JS) from the same folder as server.js
+app.use(express.static(__dirname));
 
-// Ruta para obtener la lista de archivos en la carpeta "archivos"
-app.get('/api/files', (req, res) => {
-    fs.readdir(path.join(__dirname, 'archivos'), (err, files) => {
-        if (err) {
-            return res.status(500).json({ error: 'No se pudieron leer los archivos' });
-        }
-        res.json(files); // Envia la lista de archivos al frontend
-    });
-});
-
-// Ruta para subir un archivo a la carpeta "archivos"
+// Route to handle file uploads
 app.post('/upload', upload.single('file'), (req, res) => {
-    req.file.path = req.file.destination + req.file.originalname
     res.json({ message: 'Archivo subido con éxito' });
 });
 
+// Route to get the list of uploaded files
+app.get('/api/files', (req, res) => {
+    const directoryPath = path.join(__dirname, 'Archivos');
+
+    fs.readdir(directoryPath, (err, files) => {
+        if (err) {
+            return res.status(500).json({ error: 'No se pudieron leer los archivos' });
+        }
+        res.json(files);
+    });
+});
+
+// Start the server
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
