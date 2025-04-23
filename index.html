@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Servidor</title>
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <link href="./Files/style.css" rel="stylesheet" type="text/css">
+    <link href="style.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/" rel="preconnect">
     <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin="anonymous">
     <link href="./Files/logo.png" rel="shortcut icon" type="image/x-icon">
@@ -17,7 +17,7 @@
         role="banner" class="navbar-section w-nav"
         style="will-change: width, height, background; height: 5rem; background-color: rgb(16, 16, 16);">
         <div class="navbar-wrapper" style="will-change: width, height; height: 5rem;">
-            <a href="./index.html" aria-current="page" class="navbar-logo w-nav-brand w--current" aria-label="home">
+            <a href="index.html" aria-current="page" class="navbar-logo w-nav-brand w--current" aria-label="home">
                 <img src="./Files/logo.png" loading="lazy" alt="" class="logo-image">
             </a>
             <p class="large-paragraph hero-length slide-in-bottom-900ms"
@@ -42,7 +42,11 @@
                             archivos al cuadro verde</label>
                     </form>
                 </div>
-                <div id="progress">
+                <div id="progreso">
+                    <div class="orbit-container" id="orbita">
+                        <div class="center-dot"></div>
+                        <div class="orbiting-dot"></div>
+                    </div>
                     <p id="porcentaje">Subiendo archivo</p>
                     <p id="velocidad">Subiendo archivo</p>
                 </div>
@@ -83,7 +87,7 @@
             </div>
         </div>
     </div>
-    <script src="./Files/test.js" type="text/javascript"></script>
+    <script src="test.js" type="text/javascript"></script>
 </body>
 
 </html>
