@@ -1,5 +1,3 @@
-const enlace = 'http://192.168.50.83:3000'
-
 function crearElemento(nombre, source) {
     const node = document.createElement("div");
     node.role = "listitem"
@@ -55,7 +53,7 @@ function isMusic(text) {
 }
 
 async function fetchFiles() {
-    const response = await fetch(enlace + '/api/files');
+    const response = await fetch('/api/files');
     const files = await response.json();
 
     const parent = document.getElementById('listaArchivos');
@@ -116,7 +114,7 @@ document.getElementById('file-input').addEventListener('change', async (e) => {
             progress.textContent = 'Error al subir el archivo';
         };
 
-        xhr.open('POST', enlace + '/upload');
+        xhr.open('POST', '/upload');
         xhr.send(formData);
     }
 

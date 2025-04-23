@@ -2,7 +2,21 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
+function getLocalIPv4() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return '127.0.0.1';
+}
+
+const localIP = getLocalIPv4();
 const app = express();
 const PORT = 3000;
 
@@ -39,9 +53,5 @@ app.get('/api/files', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log('No olvides cambiar tu ip en la primera linea de codigo del archivo ./Files/test.js')
-    console.log('Debe estar en el siguiente http://TU_IP:TU_PUERTO')
-    console.log('La ip suelen ser 4 conjuntos de numeros, por ejemplo 192.168.1.50')
-    console.log('El puerto por default ')
-    console.log(`Servidor escuchando en http://localhost:${PORT}`);
+    console.log(`Servidor escuchando en http://${localIP}:${PORT}`);
 });
