@@ -80,106 +80,34 @@ window.onload = fetchFiles();
 document.getElementById('file-input').addEventListener('change', async (e) => {
     const fileInput = e.target;
     const progress = document.getElementById('progreso');
+    const orbita = document.getElementById('orbita');
 
     if (fileInput.files.length > 0) {
         progress.style.opacity = '1'
+        orbita.style.opacity = '1'
         if (fileInput.files.length > 0){
-            await uploadWithFetch(fileInput.files[0]);
+            await uploadWithFetch(fileInput.files[0], orbita);
         }
     }
 });
 
 
-async function uploadWithFetch(file) {
-    const porcentaje = document.getElementById('porcentaje');
-    const velocidad = document.getElementById('velocidad');
-    const orbita = document.getElementById('orbita');
-
-    orbita.style.opacity = '1'
-    const totalSize = file.size;
-    let uploaded = 0;
-    let lastUpdateTime = 0;
-    const startTime = Date.now();
-  
-    const stream = file.stream();
-    const reader = stream.getReader();
-  
-    const uploadStream = new ReadableStream({
-      async start(controller) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-  
-          uploaded += value.length;
-  
-          const currentTime = Date.now();
-          if (currentTime - lastUpdateTime >= 1000) {
-            const percent = (uploaded / totalSize) * 100;
-            porcentaje.textContent = `Subiendo: ${percent.toFixed(2)}%`;
-  
-            const timeElapsed = (currentTime - startTime) / 1000;
-            const speed = uploaded / timeElapsed;
-  
-            if (speed > (1024 * 1024)) {
-              velocidad.textContent = `Velocidad: ${(speed / 1024 / 1024).toFixed(2)} MB/s`;
-            } else if (speed > 1024) {
-              velocidad.textContent = `Velocidad: ${(speed / 1024).toFixed(2)} KB/s`;
-            } else {
-              velocidad.textContent = `Velocidad: ${speed.toFixed(2)} B/s`;
-            }
-  
-            lastUpdateTime = currentTime;
-          }
-  
-          controller.enqueue(value);
-        }
-  
-        controller.close();
-      }
-    });
-  
-    const formBoundary = "----WebKitFormBoundary" + Math.random().toString(36).substring(2);
-    const headers = {
-      "Content-Type": `multipart/form-data; boundary=${formBoundary}`
-    };
-  
-    const preamble = `--${formBoundary}\r\n` +
-      `Content-Disposition: form-data; name="file"; filename="${file.name}"\r\n` +
-      `Content-Type: ${file.type || "application/octet-stream"}\r\n\r\n`;
-  
-    const ending = `\r\n--${formBoundary}--\r\n`;
-  
-    const bodyStream = new ReadableStream({
-      async start(controller) {
-        controller.enqueue(new TextEncoder().encode(preamble));
-  
-        const reader = uploadStream.getReader();
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          controller.enqueue(value);
-        }
-  
-        controller.enqueue(new TextEncoder().encode(ending));
-        orbita.style.opacity = '0'
-        controller.close();
-      }
-    });
-  
+async function uploadWithFetch(file, orbita) {
     try {
+      const formData = new FormData();
+      formData.append('file', file);
+
       const response = await fetch('/upload', {
         method: 'POST',
-        body: bodyStream,
-        duplex: 'half',
-        headers: headers
+        body: formData
       });
-  
+
       const result = await response.json();
       porcentaje.textContent = result.message || 'Archivo subido con éxito';
-      velocidad.textContent = '';
     } catch (err) {
       console.error(err);
       porcentaje.textContent = 'Error al subir el archivo (timeout o conexión)';
-      velocidad.textContent = '';
     }
+
+    orbita.style.opacity = '0'
   }
