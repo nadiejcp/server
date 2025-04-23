@@ -29,16 +29,44 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 * 1024, // 10 GB limit
+  }, 
+});
 
 app.use(express.static(__dirname));
 
-app.post('/upload', upload.single('file'), (req, res) => {
+app.use((req, res, next) => {
+    req.setTimeout(2 * 60 * 60 * 1000); // 2 hours timeout
+    next();
+});
+
+app.post('/upload', (req, res) => {
+  upload.single('file')(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        print('limit size')
+        return res.status(413).json({ success: false, message: 'File too large' });
+      }
+      print('other')
+      print(err.message)
+      print(err)
+      return res.status(500).json({ success: false, message: err.message });
+    } else if (err) {
+      print('upload error')
+      print(err)
+      print(err.message)
+      return res.status(500).json({ success: false, message: 'Upload error' });
+    }
+
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
-  
-    res.json({ success: true, message: `File ${req.file.originalname} uploaded successfully` });
+
+    res.json({ success: true, message: `Archivo cargado` });
+  });
 });
 
 app.get('/api/files', (req, res) => {
@@ -52,6 +80,7 @@ app.get('/api/files', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en http://${localIP}:${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`Servidor escuchando en http://${localIP}:${PORT}`);
 });
+server.setTimeout(2 * 60 * 60 * 1000); // 2 hours

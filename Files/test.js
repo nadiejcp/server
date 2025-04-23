@@ -81,6 +81,8 @@ window.onload = fetchFiles();
 document.getElementById('file-input').addEventListener('change', async (e) => {
     const fileInput = e.target;
     const progress = document.getElementById('progress');
+    const porcentaje = document.getElementById('porcentaje');
+    const velocidad = document.getElementById('velocidad');
 
     if (fileInput.files.length > 0) {
         progress.style.opacity = '1'
@@ -90,28 +92,50 @@ document.getElementById('file-input').addEventListener('change', async (e) => {
 
         const xhr = new XMLHttpRequest();
 
+        let startTime = new Date().getTime();
+        let lastUpdateTime = 0;
+
         xhr.upload.addEventListener('progress', (event) => {
+            
             if (event.lengthComputable) {
-                const percent = (event.loaded / event.total) * 100;
-                progress.textContent = `Subiendo: ${Math.round(percent)}%`;
+                const currentTime = new Date().getTime();
+                
+                if (currentTime - lastUpdateTime >= 1000) {
+                    const percent = (event.loaded / event.total) * 100;
+                    porcentaje.textContent = `Subiendo: ${Math.round(percent*100)/100}%`;
+
+                    const timeElapsed = (currentTime - startTime) / 1000; 
+                    const uploadSpeed = event.loaded / timeElapsed; 
+                    if (uploadSpeed > (1024*1024)){
+                        velocidad.textContent = `Velocidad de subida: ${Math.round(100*(uploadSpeed/1024)/1024) / 100} MB/s`;
+                    }else if (uploadSpeed > 1024){
+                        velocidad.textContent = `Velocidad de subida: ${Math.round(100*(uploadSpeed/1024)) / 100} KB/s`;
+                    }else{ 
+                        velocidad.textContent = `Velocidad de subida: ${Math.round(100*uploadSpeed) / 100} B/s`;
+                    }
+
+                    lastUpdateTime = currentTime; 
+                }
             }
         });
 
         xhr.onload = () => {
+            const response = JSON.parse(xhr.responseText);
+            console.log(response)
             if (xhr.status === 200) {
+                porcentaje.textContent = response.message || 'Archivo subido con éxito';
                 fetchFiles(); 
                 fileInput.value = '';
-                progress.textContent = '';
-                progress.textContent = 'Archivo subido con éxito';
+                velocidad.textContent = '';
             } else {
-                progress.textContent = 'Error al subir el archivo';
+                porcentaje.textContent = response.message || 'Error al subir el archivo';
+                velocidad.textContent = '';
             }
         };
 
         xhr.onerror = () => { 
-            progress.style.opacity = '0'
-            alert('Hubo un error al subir el archivo');
-            progress.textContent = 'Error al subir el archivo';
+            porcentaje.textContent = 'Error al subir el archivo';
+            velocidad.textContent = '';
         };
 
         xhr.open('POST', '/upload');
