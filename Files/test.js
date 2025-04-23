@@ -128,12 +128,14 @@ document.getElementById('file-input').addEventListener('change', async (e) => {
                 fileInput.value = '';
                 velocidad.textContent = '';
             } else {
-                porcentaje.textContent = response.message || 'Error al subir el archivo';
+                console.log(xhr.status)
+                porcentaje.textContent = response.message || 'Fallo al cargar el archivo';
                 velocidad.textContent = '';
             }
         };
 
         xhr.onerror = () => { 
+            console.log('se intento')
             porcentaje.textContent = 'Error al subir el archivo';
             velocidad.textContent = '';
         };

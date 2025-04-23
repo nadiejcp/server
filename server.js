@@ -59,6 +59,10 @@ app.post('/upload', (req, res) => {
       print(err)
       print(err.message)
       return res.status(500).json({ success: false, message: 'Upload error' });
+    } else {
+      print('here')
+      print(err)
+      print(err.message)
     }
 
     if (!req.file) {
