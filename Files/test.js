@@ -1,3 +1,5 @@
+const enlace = 'http://192.168.50.83:3000'
+
 function crearElemento(nombre, source) {
     const node = document.createElement("div");
     node.role = "listitem"
@@ -52,9 +54,8 @@ function isMusic(text) {
     return (text.endsWith('mp3') | text.endsWith('a4u'));
 }
 
-// Obtener y mostrar la lista de archivos
 async function fetchFiles() {
-    const response = await fetch('http://localhost:2525/api/files');
+    const response = await fetch(enlace + '/api/files');
     const files = await response.json();
 
     const parent = document.getElementById('listaArchivos');
@@ -77,27 +78,46 @@ async function fetchFiles() {
     }
 }
 
-window.onload = fetchFiles;
+window.onload = fetchFiles();
 
 document.getElementById('file-input').addEventListener('change', async (e) => {
     const fileInput = e.target;
-    if (fileInput.files.length > 0) {
-        const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
-        formData.filename = formData.originalname
-        console.log(formData)
+    const progress = document.getElementById('progress');
 
-        const response = await fetch('http://localhost:2525/upload', {
-            method: 'POST',
-            body: formData,
+    if (fileInput.files.length > 0) {
+        progress.style.opacity = '1'
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+                const percent = (event.loaded / event.total) * 100;
+                progress.textContent = `Subiendo: ${Math.round(percent)}%`;
+            }
         });
 
-        if (response.ok) {
-            alert('Archivo subido con éxito');
-            fetchFiles(); // Actualizar la lista de archivos
-            fileInput.value = ''; // Reiniciar el input de archivo
-        } else {
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                fetchFiles(); 
+                fileInput.value = '';
+                progress.textContent = '';
+                progress.textContent = 'Archivo subido con éxito';
+            } else {
+                progress.textContent = 'Error al subir el archivo';
+            }
+        };
+
+        xhr.onerror = () => { 
+            progress.style.opacity = '0'
             alert('Hubo un error al subir el archivo');
-        }
+            progress.textContent = 'Error al subir el archivo';
+        };
+
+        xhr.open('POST', enlace + '/upload');
+        xhr.send(formData);
     }
+
 });
