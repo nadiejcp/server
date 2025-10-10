@@ -18,7 +18,7 @@ function getLocalIPv4() {
 
 const localIP = getLocalIPv4();
 const app = express();
-const PORT = 3000;
+const PORT = 5277;
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
