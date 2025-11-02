@@ -71,7 +71,7 @@ app.get('/api/files', (req, res) => {
     });
 });
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor escuchando en http://${localIP}:${PORT}`);
 });
 server.setTimeout(2 * 60 * 60 * 1000); // 2 hours
